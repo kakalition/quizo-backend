@@ -93,6 +93,17 @@ app.get('/applications/:uuid/menus', async (req, res) => {
   res.send(results).status(200);
 });
 
+app.get('/applications/:uuid/menus/:menuUuid', async (req, res) => {
+  const instance = await mongoDb.getInstance();
+  const collection = await instance.collection('menus');
+
+  const results = await collection.find({
+    parentUuid: req.params.menuUuid
+  }).toArray();
+
+  res.send(results).status(200);
+});
+
 app.post('/applications/:uuid/menus', async (req, res) => {
   const instance = await mongoDb.getInstance();
   const collection = await instance.collection('menus');
@@ -102,7 +113,7 @@ app.post('/applications/:uuid/menus', async (req, res) => {
     appUuid: req.params.uuid,
     parentUuid: req.body.parentUuid,
     name: req.body.name,
-    index: req.body.index,
+    index: parseInt(req.body.index),
   });
 
   res.send(result).status(201);
@@ -113,7 +124,8 @@ app.put('/applications/:uuid/menus/:menuUuid', async (req, res) => {
   const collection = await instance.collection('menus');
 
   const currentItem = await collection.findOne({
-    uuid: req.params['menuUuid']
+    uuid: req.params['menuUuid'],
+    index: parseInt(req.body.index),
   })
 
   currentItem.name = req.body.name;
@@ -150,6 +162,9 @@ app.get('/applications/:uuid/menus/:menuUuid/quiz', async (req, res) => {
   const result = await collection.findOne({
     menuUuid: req.params.menuUuid
   });
+
+  console.log(`menuUuid ${req.params.menuUuid}`);
+  console.log(`result ${result}`);
 
   res.send(result ?? { quiz: [] }).status(200);
 });
